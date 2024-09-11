@@ -36,20 +36,6 @@ jobs:
       # - name: test
       #   run: zig build test
 
-      # Package the build output into a tar.xz file
-      - name: Create archive
-        run: |
-          mkdir -p artifacts
-          tar -cJf artifacts/mach-glfw.tar.xz zig-out
-
-      # Upload the build artifact (e.g., build output folder)
-      - name: Upload archive
-        uses: actions/upload-artifact@v3
-        with:
-          name: mach-glfw
-          path: artifacts/mach-glfw.tar.xz
-          retention-days: 30
-
   # x86_64-windows:
   #   runs-on: windows-latest
   #   # We want to run on external PRs, but not on our own internal PRs as they'll be run by the push

@@ -31,10 +31,3 @@ pub fn build(b: *std.Build) !void {
         @import("glfw").addPaths(&main_tests.root_module);
     }
 }
-
-comptime {
-    const supported_zig = std.SemanticVersion.parse("0.13.0") catch unreachable;
-    if (builtin.zig_version.order(supported_zig) != .eq) {
-        @compileError(std.fmt.comptimePrint("unsupported Zig version ({}). Required Zig version 0.13.0", .{builtin.zig_version}));
-    }
-}
