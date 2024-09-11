@@ -35,55 +35,70 @@ jobs:
           zig build
       # - name: test
       #   run: zig build test
-  x86_64-windows:
-    runs-on: windows-latest
-    # We want to run on external PRs, but not on our own internal PRs as they'll be run by the push
-    # to the branch.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: "true"
-      - name: Setup Zig
+
+      # Package the build output into a tar.xz file
+      - name: Create archive
         run: |
-          $ProgressPreference = 'SilentlyContinue'
-          Invoke-WebRequest -Uri "https://ziglang.org/download/0.13.0/zig-windows-x86_64-0.13.0.zip" -OutFile "C:\zig.zip"
-          cd C:\
-          7z x zig.zip
-          Add-Content $env:GITHUB_PATH "C:\zig-windows-x86_64-0.13.0-dev.351+64ef45eb0\"
-      - name: x86_64-windows -> x86_64-macos
-        run: zig build -Dtarget=x86_64-macos
-      - name: x86_64-windows -> aarch64-macos
-        run: zig build -Dtarget=aarch64-macos
-      - name: x86_64-windows -> x86_64-linux
-        run: zig build -Dtarget=x86_64-linux
-      - name: build
-        run: zig build
-      # - name: test
-      #   run: zig build test
-  x86_64-macos:
-    runs-on: macos-12
-    # We want to run on external PRs, but not on our own internal PRs as they'll be run by the push
-    # to the branch.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+          mkdir -p artifacts
+          tar -cJf artifacts/mach-glfw.tar.xz zig-out
+
+      # Upload the build artifact (e.g., build output folder)
+      - name: Upload archive
+        uses: actions/upload-artifact@v3
         with:
-          submodules: "true"
-      - name: Setup Zig
-        run: |
-          brew uninstall --ignore-dependencies libx11 # https://github.com/ziglang/zig/issues/11066
-          brew install xz
-          sudo sh -c 'wget -c https://ziglang.org/download/0.13.0/zig-macos-x86_64-0.13.0.tar.xz -O - | tar -xJ --strip-components=1 -C /usr/local/bin'
-      - name: x86_64-macos -> aarch64-macos
-        run: zig build -Dtarget=aarch64-macos
-      - name: x86_64-macos -> x86_64-windows
-        run: zig build -Dtarget=x86_64-windows
-      - name: x86_64-macos -> x86_64-linux
-        run: zig build -Dtarget=x86_64-linux
-      - name: build
-        run: zig build
-      # - name: test
-      #   run: zig build test
+          name: mach-glfw
+          path: artifacts/mach-glfw.tar.xz
+          retention-days: 30
+
+  # x86_64-windows:
+  #   runs-on: windows-latest
+  #   # We want to run on external PRs, but not on our own internal PRs as they'll be run by the push
+  #   # to the branch.
+  #   if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: "true"
+  #     - name: Setup Zig
+  #       run: |
+  #         $ProgressPreference = 'SilentlyContinue'
+  #         Invoke-WebRequest -Uri "https://ziglang.org/download/0.13.0/zig-windows-x86_64-0.13.0.zip" -OutFile "C:\zig.zip"
+  #         cd C:\
+  #         7z x zig.zip
+  #         Add-Content $env:GITHUB_PATH "C:\zig-windows-x86_64-0.13.0-dev.351+64ef45eb0\"
+  #     - name: x86_64-windows -> x86_64-macos
+  #       run: zig build -Dtarget=x86_64-macos
+  #     - name: x86_64-windows -> aarch64-macos
+  #       run: zig build -Dtarget=aarch64-macos
+  #     - name: x86_64-windows -> x86_64-linux
+  #       run: zig build -Dtarget=x86_64-linux
+  #     - name: build
+  #       run: zig build
+  #     # - name: test
+  #     #   run: zig build test
+  # x86_64-macos:
+  #   runs-on: macos-12
+  #   # We want to run on external PRs, but not on our own internal PRs as they'll be run by the push
+  #   # to the branch.
+  #   if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: "true"
+  #     - name: Setup Zig
+  #       run: |
+  #         brew uninstall --ignore-dependencies libx11 # https://github.com/ziglang/zig/issues/11066
+  #         brew install xz
+  #         sudo sh -c 'wget -c https://ziglang.org/download/0.13.0/zig-macos-x86_64-0.13.0.tar.xz -O - | tar -xJ --strip-components=1 -C /usr/local/bin'
+  #     - name: x86_64-macos -> aarch64-macos
+  #       run: zig build -Dtarget=aarch64-macos
+  #     - name: x86_64-macos -> x86_64-windows
+  #       run: zig build -Dtarget=x86_64-windows
+  #     - name: x86_64-macos -> x86_64-linux
+  #       run: zig build -Dtarget=x86_64-linux
+  #     - name: build
+  #       run: zig build
+  #     # - name: test
+  #     #   run: zig build test
